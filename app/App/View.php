@@ -11,4 +11,10 @@ class View
         require __DIR__ . '/../View/' . $view . '.php';
         require __DIR__ . '/../View/header.php';
     }
+
+    public static function redirect(string $url)
+    {
+        header("Location: $url");
+        exit();
+    }
 }
