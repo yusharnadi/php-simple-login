@@ -29,7 +29,7 @@ class SessionService
 
         $this->sessionRepository->save($session);
 
-        setcookie(self::$COOKIE_NAME, $session->id, (60 * 60 * 24), "/");
+        setcookie(self::$COOKIE_NAME, $session->id, time() + (60 * 60 * 24), "/");
 
         return $session;
     }
