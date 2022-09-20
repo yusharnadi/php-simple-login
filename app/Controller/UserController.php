@@ -6,6 +6,7 @@ use ProgrammerZamanNow\Belajar\PHP\MVC\App\View;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Config\Database;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Exception\ValidationException;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserLoginRequest;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserProfileUpdateRequest;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserRegisterRequest;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Repository\SessionRepository;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Repository\UserRepository;
@@ -80,5 +81,41 @@ class UserController
     {
         $this->sessionService->destroy();
         View::redirect("/");
+    }
+
+    public function updateProfile()
+    {
+        $user = $this->sessionService->current();
+
+        View::render("user/profile", [
+            "title" => "Update Profile",
+            "user" => [
+                "id" => $user->id,
+                "name" => $user->name,
+            ]
+        ]);
+    }
+
+    public function postUpdateProfile()
+    {
+        $user = $this->sessionService->current();
+
+        $request = new UserProfileUpdateRequest();
+        $request->id = $user->id;
+        $request->name = $_POST['name'];
+
+        try {
+            $this->userService->updateProfile($request);
+            View::redirect('/');
+        } catch (ValidationException $e) {
+            View::render('user/profile', [
+                'title' => 'Update Profile',
+                'error' => $e->getMessage(),
+                "user" => [
+                    "id" => $user->id,
+                    "name" => $_POST['name'],
+                ]
+            ]);
+        }
     }
 }
