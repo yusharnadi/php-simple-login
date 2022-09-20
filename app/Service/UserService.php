@@ -8,6 +8,8 @@ use ProgrammerZamanNow\Belajar\PHP\MVC\Domain\User;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Exception\ValidationException;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserLoginRequest;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserLoginResponse;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserProfileUpdateRequest;
+use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserProfileUpdateResponse;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserRegisterRequest;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Model\UserRegisterResponse;
 use ProgrammerZamanNow\Belajar\PHP\MVC\Repository\UserRepository;
@@ -71,6 +73,34 @@ class UserService
         }
     }
 
+    public function updateProfile(UserProfileUpdateRequest $request): UserProfileUpdateResponse
+    {
+        $this->validateUserProfileUpdateRequest($request);
+
+        try {
+            Database::beginTransaction();
+
+            $user = $this->userRepository->findById($request->id);
+
+            if ($user == null) {
+                throw new ValidationException("User not found");
+            }
+
+            $user->name = $request->name;
+            $this->userRepository->update($user);
+
+            Database::commitTransaction();
+
+            $response = new UserProfileUpdateResponse();
+            $response->user = $user;
+
+            return $response;
+        } catch (\Exception $e) {
+            Database::rollbackTransaction();
+            throw $e;
+        }
+    }
+
     private function validateUserRegistrationRequest(UserRegisterRequest $request)
     {
         if ($request->id == null || $request->name == null || $request->password == null || trim($request->id) == "" || trim($request->name) == "" || trim($request->password) == "") {
@@ -81,6 +111,13 @@ class UserService
     private function validateUserLoginRequest(UserLoginRequest $request)
     {
         if ($request->id == null || $request->password == null || trim($request->id) == "" || trim($request->password) == "") {
+            throw new ValidationException("Field cannot blank");
+        }
+    }
+
+    private function validateUserProfileUpdateRequest(UserProfileUpdateRequest $request)
+    {
+        if ($request->id == null || $request->name == null || trim($request->id) == "" || trim($request->name) == "") {
             throw new ValidationException("Field cannot blank");
         }
     }
